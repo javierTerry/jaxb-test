@@ -1,6 +1,8 @@
 package hello;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +41,12 @@ public class FileUploadController {
                 path -> MvcUriComponentsBuilder.fromMethodName(FileUploadController.class,
                         "serveFile", path.getFileName().toString()).build().toString())
                 .collect(Collectors.toList()));
+        
+        Files.walk(Paths.get("/home/javier/Downloads/FacturaElectronica"))
+        	.filter(Files::isRegularFile)
+        	.filter(filePath -> filePath.toString().endsWith(".xml"))
+        	.forEach(System.out::println);
+        
 
         return "uploadForm";
     }
