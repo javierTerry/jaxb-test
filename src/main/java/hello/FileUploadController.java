@@ -1,12 +1,17 @@
 package hello;
 
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -33,6 +38,7 @@ import hello.storage.StorageFileNotFoundException;
 import hello.storage.StorageService;
 import net.valdo.cfdi.Comprobante;
 import net.valdo.cfdi.Comprobante.Emisor;
+import net.valdo.jaxb.ImplJaxb;
 
 @Controller
 public class FileUploadController {
@@ -46,22 +52,39 @@ public class FileUploadController {
         this.storageService = storageService;
     }
 
-    @GetMapping("/testLoad")
-    public String listUploadedFiles(Model model) throws IOException {
 
-        model.addAttribute("files", storageService.loadAll().map(
-                path -> MvcUriComponentsBuilder.fromMethodName(FileUploadController.class,
-                        "serveFile", path.getFileName().toString()).build().toString())
-                .collect(Collectors.toList()));
-        
-        Files.walk(Paths.get("/home/javier/Downloads/FacturaElectronica"))
+    @GetMapping("/testLoad")
+    public String listUploadedFiles() {
+
+        Stream<Path> path;
+		try {
+			path = Files.walk(Paths.get("/home/javier/Downloads/FacturaElectronica"));
+			path
         	.filter(Files::isRegularFile)
         	.filter(filePath -> filePath.toString().endsWith(".xml"))
-        	.forEach(System.out::println);
+        	.forEach(filePath -> {
+                try {
+                	System.out.println(filePath.toString());
+                	ImplJaxb ns = new ImplJaxb();
+                	ns.xmlParse(filePath);
+                	
+                } catch (Exception e) {
+                    System.out.println(e.getMessage());
+                }
+            });
+			
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			System.out.println(e.getMessage());
+		}
         
-
+        
         return "uploadForm";
     }
+    
+    
+    
+    
 
     @GetMapping("/files/{filename:.+}")
     @ResponseBody
