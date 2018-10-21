@@ -1,16 +1,13 @@
 package hello;
 
 import java.io.File;
-import java.io.FileReader;
+
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.xml.bind.JAXBContext;
@@ -19,19 +16,14 @@ import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.Resource;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import hello.storage.StorageFileNotFoundException;
@@ -39,34 +31,47 @@ import hello.storage.StorageService;
 import net.valdo.cfdi.Comprobante;
 import net.valdo.cfdi.Comprobante.Emisor;
 import net.valdo.jaxb.ImplJaxb;
+import net.valdo.utils.UnzipFile;
 
 @Controller
 public class FileUploadController {
 
     private final StorageService storageService;
     private final String XML_FILE = "3.3";
-
+    private final String SOURCE_FILES = "/home/javier/Downloads/";
     
     @Autowired
     public FileUploadController(StorageService storageService) {
         this.storageService = storageService;
     }
+    
+    
+    @GetMapping("/")
+    public String index() {
+    	return "redirect:/loading/index";
+    }
+    
+    @GetMapping("/loading/index")
+    public String loading() {
+    	return "uploadForm";
+    }
 
 
-    @GetMapping("/testLoad")
+    @GetMapping("/testReadXml")
     public String listUploadedFiles() {
 
         Stream<Path> path;
 		try {
 			path = Files.walk(Paths.get("/home/javier/Downloads/FacturaElectronica"));
+			
 			path
         	.filter(Files::isRegularFile)
         	.filter(filePath -> filePath.toString().endsWith(".xml"))
         	.forEach(filePath -> {
                 try {
                 	System.out.println(filePath.toString());
-                	ImplJaxb ns = new ImplJaxb();
-                	ns.xmlParse(filePath);
+                	ImplJaxb implJaxb = new ImplJaxb();
+                	implJaxb.xmlParse(filePath);
                 	
                 } catch (Exception e) {
                     System.out.println(e.getMessage());
@@ -83,30 +88,47 @@ public class FileUploadController {
     }
     
     
-    
-    
 
-    @GetMapping("/files/{filename:.+}")
-    @ResponseBody
-    public ResponseEntity<Resource> serveFile(@PathVariable String filename) {
-
-        Resource file = storageService.loadAsResource(filename);
-        return ResponseEntity.ok().header(HttpHeaders.CONTENT_DISPOSITION,
-                "attachment; filename=\"" + file.getFilename() + "\"").body(file);
-    }
-
-    @PostMapping("/testLoad")
+    @SuppressWarnings("static-access")
+	@PostMapping("/loading/zip")
     public String handleFileUpload(@RequestParam("file") MultipartFile file,
             RedirectAttributes redirectAttributes) {
-    	
     	System.out.println("Post recibido");
+    	Stream<Path> path;
+    	String FileNameZip = file.getOriginalFilename();
+    	String sourceName = FileNameZip.replaceFirst("[.][^.]+$", "");
+    	try {
+	    	String unzipLocation = "/home/javier/Downloads/unzip/";
+			UnzipFile unzipFile = new UnzipFile();
+		
+			unzipFile.unzip(file.getInputStream(), unzipLocation);
+			
+			path = Files.walk(Paths.get("/home/javier/Downloads/unzip/"+sourceName));
+			
+			path
+        	.filter(Files::isRegularFile)
+        	.filter(filePath -> filePath.toString().endsWith(".xml"))
+        	.forEach(filePath -> {
+                try {
+                	System.out.println(filePath.toString());
+                	ImplJaxb implJaxb = new ImplJaxb();
+                	implJaxb.xmlParse(filePath);
+                	
+                } catch (Exception e) {
+                    System.out.println(e.getMessage());
+                }
+            });
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		storageService.store(file);
+		redirectAttributes.addFlashAttribute("message",
+		        "You successfully uploaded " + FileNameZip + "!");
+    	
 
-        storageService.store(file);
-        redirectAttributes.addFlashAttribute("message",
-                "You successfully uploaded " + file.getOriginalFilename() + "!");
-
-        return "redirect:/testLoad";
-        //return "uploadForm";
+        return "uploadForm";
     }
 
     
