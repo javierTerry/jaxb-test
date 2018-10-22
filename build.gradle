@@ -15,7 +15,7 @@ apply plugin: 'io.spring.dependency-management'
 
 bootJar {
     baseName = 'gs-spring-boot'
-    version =  '0.1.0'
+    version =  '0.0.1'
 }
 
 repositories {
@@ -31,7 +31,13 @@ dependencies {
 
 	compile("org.springframework.boot:spring-boot-starter-thymeleaf")
     compile("org.springframework.boot:spring-boot-starter-web")
+    compile("org.springframework.boot:spring-boot-devtools")
+    
     compile("org.springframework.boot:spring-boot-starter-actuator")
+    // https://mvnrepository.com/artifact/commons-io/commons-io
+	compile group: 'commons-io', name: 'commons-io', version: '2.4'
+    
+    
     testCompile("junit:junit")
     
 }

@@ -16,6 +16,7 @@
 # Exclude Folder List #
 .gradle/
 build/
+gradle/
 
 
 ### Eclipse ###
@@ -46,3 +47,7 @@ local.properties
 # PDT-specific
 .buildpath
 
+#Propios del proyecto
+
+*.xml
+upload-dir/
