@@ -16,8 +16,9 @@
 	
 	
 	<div th:if="${sourceName}">
-	
-		<h1> <a th:href="@{'/download/' + ${sourceName}}" th:text="Descarga CSV" /></h1>
+		<h2> 	
+			<a th:href="@{'/download/' + ${sourceName}}">Descarga CSV</a></a> 
+		</h2>
 	</div>
 
 	<div>

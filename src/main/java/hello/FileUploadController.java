@@ -3,6 +3,7 @@ package hello;
 import java.io.File;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.nio.file.Files;
@@ -10,6 +11,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.stream.Stream;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
@@ -39,7 +41,7 @@ public class FileUploadController {
 
     private final StorageService storageService;
     private final String XML_FILE = "3.3";
-    private final String SOURCE_FILES_UNZIP = "/home/javier/Downloads/unzip";
+    private final String SOURCE_FILES_UNZIP = "/home/javier/Downloads/unzip/";
     
     @Autowired
     public FileUploadController(StorageService storageService) {
@@ -61,7 +63,7 @@ public class FileUploadController {
 
 
     @GetMapping("/download/{sourceName}")
-    public String listUploadedFiles(@PathVariable("sourceName") String sourceName) {
+    public void listUploadedFiles(@PathVariable("sourceName") String sourceName, HttpServletResponse response) {
     	
     	Stream<Path> path;
 		try {
@@ -81,13 +83,23 @@ public class FileUploadController {
                 }
             });
 			
+			response.addHeader("Content-Type", "application/csv");
+			response.addHeader("Content-Disposition", "attachment; filename=user_details.csv");
+			response.setCharacterEncoding("UTF-8");
+			
+			PrintWriter out = response.getWriter();
+			out.write("test,test1,test2");
+			out.write("\n");
+			out.flush();
+			out.close();
+			
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			System.out.println(e.getMessage());
 		}
         
         
-        return "uploadForm";
+        //return "uploadForm";
     }
     
     
@@ -106,36 +118,23 @@ public class FileUploadController {
 		
 			unzipFile.unzip(file.getInputStream(), unzipLocation);
 			
-			/*
-			path = Files.walk(Paths.get("/home/javier/Downloads/unzip/"+sourceName));
+			storageService.store(file);
+			redirectAttributes.addFlashAttribute("message",
+			        "You successfully uploaded " + FileNameZip + "!");
 			
-			path
-        	.filter(Files::isRegularFile)
-        	.filter(filePath -> filePath.toString().endsWith(".xml"))
-        	.forEach(filePath -> {
-                try {
-                	System.out.println(filePath.toString());
-                	ImplJaxb implJaxb = new ImplJaxb();
-                	implJaxb.xmlParse(filePath);
-                	
-                } catch (Exception e) {
-                    System.out.println(e.getMessage());
-                }
-            });
-            */
-		} catch (IOException e) {
+			redirectAttributes.addFlashAttribute("sourceName", sourceName);
+	    	System.out.println("fin Post");
+
+    	} catch (IOException e) {
 			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (Exception e) {
+			// TODO: handle exception
 			e.printStackTrace();
 		}
 		
-		storageService.store(file);
-		redirectAttributes.addFlashAttribute("message",
-		        "You successfully uploaded " + FileNameZip + "!");
 		
-		//redirectAttributes.addFlashAttribute("sourceName", sourceName);
-    	System.out.println("fin Post");
-
-        return "uploadForm";
+        return "redirect:/loading/index";
     }
 
     
