@@ -89,7 +89,7 @@ public class FileUploadController {
     
     
 
-    @SuppressWarnings("static-access")
+    //@SuppressWarnings("static-access")
 	@PostMapping("/loading/zip")
     public String handleFileUpload(@RequestParam("file") MultipartFile file,
             RedirectAttributes redirectAttributes) {
@@ -128,7 +128,7 @@ public class FileUploadController {
 		        "You successfully uploaded " + FileNameZip + "!");
     	
 
-        return "uploadForm";
+        return "redirect:/loading/index";
     }
 
     
