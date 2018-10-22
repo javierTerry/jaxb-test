@@ -21,6 +21,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
@@ -38,7 +39,7 @@ public class FileUploadController {
 
     private final StorageService storageService;
     private final String XML_FILE = "3.3";
-    private final String SOURCE_FILES = "/home/javier/Downloads/";
+    private final String SOURCE_FILES_UNZIP = "/home/javier/Downloads/unzip";
     
     @Autowired
     public FileUploadController(StorageService storageService) {
@@ -52,17 +53,19 @@ public class FileUploadController {
     }
     
     @GetMapping("/loading/index")
-    public String loading() {
+    public String loading(RedirectAttributes redirectAttributes) {
+    	
+    	//redirectAttributes.addFlashAttribute("sourceName", "blank");
     	return "uploadForm";
     }
 
 
-    @GetMapping("/testReadXml")
-    public String listUploadedFiles() {
-
-        Stream<Path> path;
+    @GetMapping("/download/{sourceName}")
+    public String listUploadedFiles(@PathVariable("sourceName") String sourceName) {
+    	
+    	Stream<Path> path;
 		try {
-			path = Files.walk(Paths.get("/home/javier/Downloads/FacturaElectronica"));
+			path = Files.walk(Paths.get(SOURCE_FILES_UNZIP + sourceName));
 			
 			path
         	.filter(Files::isRegularFile)
@@ -103,6 +106,7 @@ public class FileUploadController {
 		
 			unzipFile.unzip(file.getInputStream(), unzipLocation);
 			
+			/*
 			path = Files.walk(Paths.get("/home/javier/Downloads/unzip/"+sourceName));
 			
 			path
@@ -118,6 +122,7 @@ public class FileUploadController {
                     System.out.println(e.getMessage());
                 }
             });
+            */
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -126,7 +131,9 @@ public class FileUploadController {
 		storageService.store(file);
 		redirectAttributes.addFlashAttribute("message",
 		        "You successfully uploaded " + FileNameZip + "!");
-    	
+		
+		//redirectAttributes.addFlashAttribute("sourceName", sourceName);
+    	System.out.println("fin Post");
 
         return "uploadForm";
     }
