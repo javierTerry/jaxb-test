@@ -62,13 +62,31 @@ public class FileUploadController {
     }
 
 
-    @GetMapping("/download/{sourceName}")
+    @SuppressWarnings("resource")
+	@GetMapping("/download/{sourceName}")
     public void listUploadedFiles(@PathVariable("sourceName") String sourceName, HttpServletResponse response) {
     	
-    	Stream<Path> path;
+    	response.addHeader("Content-Type", "application/csv");
+		response.addHeader("Content-Disposition", "attachment; filename=cfdi_details.csv");
+		response.setCharacterEncoding("UTF-8");
+		
+    	
 		try {
-			path = Files.walk(Paths.get(SOURCE_FILES_UNZIP + sourceName));
+			PrintWriter out = response.getWriter();
+			Stream<Path> path;
 			
+			
+			out.write("1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56");
+			out.write("\n");
+			out.write("Verificado ó Asoc.,Estado SAT,Version,Tipo,Fecha Emision,Fecha Timbrado,EstadoPago,FechaPago,Serie,Folio,UUID,UUID Relacion,"
+					+ "RFC Emisor,Nombre Emisor,LugarDeExpedicion,RFC Receptor,Nombre Receptor,ResidenciaFiscal,NumRegIdTrib,UsoCFDI,SubTotal,Descuento"
+					+ ",Total IEPS,IVA 16%,Retenido IVA,Retenido ISR,ISH,Total,TotalOriginal,Total Trasladados,Total Retenidos,Total LocalTrasladado,Total LocalRetenido"
+					+ ",Complemento,Moneda,Tipo De Cambio,FormaDePago,Metodo de Pago,NumCtaPago,Condicion de Pago,Conceptos,Combustible"
+					+ ",IEPS 3%,IEPS 6%,IEPS 7%,IEPS 8%,IEPS 9%,IEPS 26.5%,IEPS 30%,IEPS 53%,IEPS 160%,Archivo XML,Direccion Emisor,Localidad Emisor,Direccion Receptor"
+					+ ",Localidad Receptor");
+			
+			path = Files.walk(Paths.get(SOURCE_FILES_UNZIP + sourceName));
+					
 			path
         	.filter(Files::isRegularFile)
         	.filter(filePath -> filePath.toString().endsWith(".xml"))
@@ -78,18 +96,14 @@ public class FileUploadController {
                 	ImplJaxb implJaxb = new ImplJaxb();
                 	implJaxb.xmlParse(filePath);
                 	
+                	out.write( implJaxb.getlineCsv() );
+        			out.write("\n");
+                	
                 } catch (Exception e) {
                     System.out.println(e.getMessage());
                 }
             });
 			
-			response.addHeader("Content-Type", "application/csv");
-			response.addHeader("Content-Disposition", "attachment; filename=user_details.csv");
-			response.setCharacterEncoding("UTF-8");
-			
-			PrintWriter out = response.getWriter();
-			out.write("test,test1,test2");
-			out.write("\n");
 			out.flush();
 			out.close();
 			
@@ -113,10 +127,9 @@ public class FileUploadController {
     	String FileNameZip = file.getOriginalFilename();
     	String sourceName = FileNameZip.replaceFirst("[.][^.]+$", "");
     	try {
-	    	String unzipLocation = "/home/javier/Downloads/unzip/";
 			UnzipFile unzipFile = new UnzipFile();
 		
-			unzipFile.unzip(file.getInputStream(), unzipLocation);
+			unzipFile.unzip(file.getInputStream(), SOURCE_FILES_UNZIP);
 			
 			storageService.store(file);
 			redirectAttributes.addFlashAttribute("message",
@@ -133,7 +146,7 @@ public class FileUploadController {
 			e.printStackTrace();
 		}
 		
-		
+			
         return "redirect:/loading/index";
     }
 

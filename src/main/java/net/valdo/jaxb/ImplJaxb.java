@@ -20,28 +20,26 @@ import org.apache.commons.io.input.BOMInputStream;
 import org.apache.commons.io.input.CharSequenceReader;
 
 import net.valdo.cfdi.Comprobante;
+import net.valdo.cfdi.Comprobante.Complemento;
 
 public class ImplJaxb {
 	
+	Comprobante cfdi = null;
+	//Comprobante.Complemento complemento = null;
 	 public ImplJaxb() {
 		// TODO Auto-generated constructor stub
+		 
 	}
 
 	public void xmlParse(final Path path) {
 	     try {
 	    	 
-	    	 	//SchemaFactory sf = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI); 
-	         	//Schema schema = sf.newSchema(new File("/home/javier/Documents/workspace-sts393/CFDi/cfdi33.xsd"));
 	         	JAXBContext context = JAXBContext.newInstance(Comprobante.class);
         	
-	        	//File xmlFile = path.toAbsolutePath().toFile();
 	         	File xmlFile = path.toFile();
 	        	
 	        	System.out.println("<!---------------Generating the Java objects from XML Input-------------->");
 				// UnMarshalling [Generate JAVA from XML]
-				//um.setSchema(schema);
-				//um.setEventHandler(new MyValidationEventHandler());
-				// Unmarshall the provided XML into an object
 				
 				BOMInputStream inputStream = new BOMInputStream(FileUtils.openInputStream(xmlFile), false);
 		        String fileContent;
@@ -56,11 +54,22 @@ public class ImplJaxb {
 				// Instantiate Unmarshaller via context
 				Unmarshaller um = context.createUnmarshaller();
 
-		        Comprobante cfdi = (Comprobante) um.unmarshal(xmlreader);
+		        cfdi = (Comprobante) um.unmarshal(xmlreader);
+		        //complemento = (Complemento) cfdi.getComplemento();
+		        
+		        for(Comprobante.Complemento complemento : cfdi.getComplemento()){
+		    		System.out.println(complemento.getAny());
+		    		for(Object object : complemento.getAny() ) {
+		    			System.out.println(object);
+		    		}
+		    	}
+		        
+		        
 				xmlreader.close();
-				System.out.println("Serie :" + cfdi.getSerie());
-				System.out.println("Folio :" + cfdi.getFolio());
-            
+				
+				
+				
+				
 	        } catch (JAXBException e) {
 				// TODO Auto-generated catch block
 	        	e.printStackTrace();
@@ -71,5 +80,12 @@ public class ImplJaxb {
                 System.out.println(e.getMessage());
             }
     }
+	
+	public String getlineCsv() {
+		String csvFormat="%s,%s,%s, %s, %s, %s,";
+		String line = String.format(csvFormat,"","Vigente", cfdi.getVersion(), cfdi.getVersion(),"factura",cfdi.getFecha());
+		return line;
+		
+	}
 
 }
