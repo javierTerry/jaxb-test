@@ -15,9 +15,6 @@ import java.util.zip.ZipInputStream;
 public class UnzipFile {
 	public static void main(String[] args) throws IOException  {
 
-        //String unzipLocation = "/home/javier/Downloads/unzip/";
-        //String zipFilePath = "/home/javier/Downloads/FacturaElectronica.zip";
-        //unzip(zipFilePath, unzipLocation);
     }
 
     public static void unzip(final InputStream inputStream, final String unzipLocation) throws IOException {
