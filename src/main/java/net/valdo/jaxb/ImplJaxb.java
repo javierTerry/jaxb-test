@@ -18,6 +18,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.input.BOMInputStream;
 import org.apache.commons.io.input.CharSequenceReader;
+import org.w3c.dom.Element;
 
 import net.valdo.cfdi.Comprobante;
 import net.valdo.cfdi.Comprobante.Complemento;
@@ -56,13 +57,21 @@ public class ImplJaxb {
 
 		        cfdi = (Comprobante) um.unmarshal(xmlreader);
 		        //complemento = (Complemento) cfdi.getComplemento();
+		        /*
+		        JAXBContext payloadContext = JAXBContext.newInstance(MyClass.class);
+		        payloadContext.createUnmarshaller().unmarshal((Node) myPayload.getAny());
 		        
+		        */
+		        Element elment = (Element) cfdi.getComplemento().get(0).getAny().get(0);
+		        System.out.println(elment.getLocalName());
+		        /*
 		        for(Comprobante.Complemento complemento : cfdi.getComplemento()){
-		    		System.out.println(complemento.getAny());
+		    		System.out.println(complemento.getAny().getClass().getName());
 		    		for(Object object : complemento.getAny() ) {
 		    			System.out.println(object);
 		    		}
 		    	}
+		    	*/
 		        
 		        
 				xmlreader.close();

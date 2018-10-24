@@ -41,7 +41,7 @@ public class FileUploadController {
 
     private final StorageService storageService;
     private final String XML_FILE = "3.3";
-    private final String SOURCE_FILES_UNZIP = System.getProperty("user.home") + "unzip/";
+    private final String SOURCE_FILES_UNZIP = System.getProperty("user.home") + "/unzip/";
     
     @Autowired
     public FileUploadController(StorageService storageService) {
