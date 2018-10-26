@@ -19,13 +19,17 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.input.BOMInputStream;
 import org.apache.commons.io.input.CharSequenceReader;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 import net.valdo.cfdi.Comprobante;
 import net.valdo.cfdi.Comprobante.Complemento;
+import net.valdo.cfdi.tfd.TimbreFiscalDigital;
 
 public class ImplJaxb {
 	
 	Comprobante cfdi = null;
+	TimbreFiscalDigital tfd = null;
 	//Comprobante.Complemento complemento = null;
 	 public ImplJaxb() {
 		// TODO Auto-generated constructor stub
@@ -57,21 +61,39 @@ public class ImplJaxb {
 
 		        cfdi = (Comprobante) um.unmarshal(xmlreader);
 		        //complemento = (Complemento) cfdi.getComplemento();
-		        /*
-		        JAXBContext payloadContext = JAXBContext.newInstance(MyClass.class);
-		        payloadContext.createUnmarshaller().unmarshal((Node) myPayload.getAny());
 		        
-		        */
-		        Element elment = (Element) cfdi.getComplemento().get(0).getAny().get(0);
-		        System.out.println(elment.getLocalName());
+		        
+		        JAXBContext tfdContext = JAXBContext.newInstance(TimbreFiscalDigital.class);
+		        //tfd = (TimbreFiscalDigital) tfdContext.createUnmarshaller().unmarshal( (Node) cfdi.getComplemento().get(0).getAny().get(0) );
 		        /*
+		        cfdi.getComplemento()
+		        	.forEach(
+		        		complemento -> {
+		        			try {
+		        				System.out.println(complemento);
+		        			} catch ( Exception e ) {
+		        				
+		        			}
+		        		});
+		        
+		        /*Element elment = (Element) cfdi.getComplemento().get(0).getAny().get(0);
+		        System.out.println(elment.getLocalName());
+		        //elment.getChildNodes().
+		        NodeList list = elment.getChildNodes();
+				for (int i=0; i<list.getLength(); i++) {
+					System.out.println( list.item(i) );
+				}
+		        /*for (nodo : elment.getChildNodes()) {
+		        	
+		        }
+		        */
 		        for(Comprobante.Complemento complemento : cfdi.getComplemento()){
-		    		System.out.println(complemento.getAny().getClass().getName());
+		    		System.out.println(complemento.getAny());
 		    		for(Object object : complemento.getAny() ) {
 		    			System.out.println(object);
 		    		}
 		    	}
-		    	*/
+		    	
 		        
 		        
 				xmlreader.close();
